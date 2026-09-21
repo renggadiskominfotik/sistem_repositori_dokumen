@@ -45,9 +45,12 @@ if (file_exists($filePath) && !is_dir($filePath)) {
     ];
 
     if (isset($mimeTypes[$extension])) {
+        $isDownload = isset($_GET['download']) && $_GET['download'] == '1';
+        $disposition = $isDownload ? 'attachment' : 'inline';
+
         header('Content-Type: ' . $mimeTypes[$extension]);
         header('Content-Length: ' . filesize($filePath));
-        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($filePath) . '"');
         readfile($filePath);
         exit;
     }

@@ -196,15 +196,15 @@ function getBadgeClass($type) {
 
             <div class="offcanvas-body flex-column p-3 p-md-0 pt-md-3">
                 <!-- Brand Box (Desktop) -->
-                <div class="sidebar-brand-box d-none d-md-flex align-items-center justify-content-between mb-4 p-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="../assets/img/logo.png" alt="Logo DISKOMINFOTIK" width="46" height="56">
+                <div class="sidebar-brand-box d-none d-md-flex align-items-center justify-content-between mb-4 p-3 overflow-hidden">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="../assets/img/logo.png" alt="Logo DISKOMINFOTIK" width="36" height="44" style="object-fit: contain; flex-shrink: 0;">
                         <div>
-                            <div class="logo-title">DISKOMINFOTIK</div>
-                            <div class="logo-subtitle">Provinsi Riau</div>
+                            <div class="logo-title" style="font-size: 15px;">DISKOMINFOTIK</div>
+                            <div class="logo-subtitle" style="font-size: 10px;">Provinsi Riau</div>
                         </div>
                     </div>
-                    <img src="../assets/img/image.png" alt="Logo Diskominfo" width="48" height="48" style="object-fit: contain;">
+                    <img src="../assets/img/image.png" alt="Logo Diskominfo" width="34" height="34" style="object-fit: contain; flex-shrink: 0;">
                 </div>
 
                 <!-- Divider Desktop -->
@@ -627,10 +627,60 @@ document.addEventListener('DOMContentLoaded', function () {
                         </a>
                     </div>
                 `;
+            const dlBtn = document.getElementById('modalDownloadBtn');
+            if (dlBtn) {
+                dlBtn.onclick = function(e) {
+                    e.preventDefault();
+                    triggerFolderSavePicker(fileUrl, file);
+                };
             }
         });
     }
+
+    // Attach folder save picker to all card download buttons
+    document.querySelectorAll('.btn-download-modern').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('href');
+            const fileName = this.getAttribute('download') || url.split('/').pop();
+            triggerFolderSavePicker(url, fileName);
+        });
+    });
 });
+
+async function triggerFolderSavePicker(fileUrl, fileName) {
+    try {
+        const response = await fetch(fileUrl);
+        if (!response.ok) throw new Error('File tidak dapat diambil');
+        const blob = await response.blob();
+
+        if ('showSaveFilePicker' in window) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            const opts = {
+                suggestedName: fileName,
+                types: [{
+                    description: 'Dokumen ' + ext.toUpperCase(),
+                    accept: { ['application/octet-stream']: ['.' + ext] }
+                }]
+            };
+            const handle = await window.showSaveFilePicker(opts);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        }
+    } catch (err) {
+        if (err.name === 'AbortError') return;
+    }
+
+    const a = document.createElement('a');
+    a.href = fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'download=1';
+    a.download = fileName;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
 </script>
 
 </body>

@@ -413,10 +413,60 @@ document.addEventListener('DOMContentLoaded', function () {
                         </a>
                     </div>
                 `;
+            const dlBtn = document.getElementById('modalDownloadBtn');
+            if (dlBtn) {
+                dlBtn.onclick = function(e) {
+                    e.preventDefault();
+                    triggerFolderSavePicker(fileUrl, file);
+                };
             }
         });
     }
+
+    // Attach folder save picker to all table download buttons
+    document.querySelectorAll('.btn-download-action').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('href');
+            const fileName = this.getAttribute('download') || url.split('/').pop();
+            triggerFolderSavePicker(url, fileName);
+        });
+    });
 });
+
+async function triggerFolderSavePicker(fileUrl, fileName) {
+    try {
+        const response = await fetch(fileUrl);
+        if (!response.ok) throw new Error('File tidak dapat diambil');
+        const blob = await response.blob();
+
+        if ('showSaveFilePicker' in window) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            const opts = {
+                suggestedName: fileName,
+                types: [{
+                    description: 'Dokumen ' + ext.toUpperCase(),
+                    accept: { ['application/octet-stream']: ['.' + ext] }
+                }]
+            };
+            const handle = await window.showSaveFilePicker(opts);
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        }
+    } catch (err) {
+        if (err.name === 'AbortError') return;
+    }
+
+    const a = document.createElement('a');
+    a.href = fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'download=1';
+    a.download = fileName;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
 </script>
 </body>
 </html>

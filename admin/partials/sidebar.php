@@ -82,15 +82,15 @@ if (isset($koneksi) && $koneksi) {
 
     <div class="offcanvas-body flex-column p-3 p-md-0 pt-md-3">
         <!-- Brand Box (Desktop) -->
-        <div class="sidebar-brand-box d-none d-md-flex align-items-center justify-content-between mb-4 p-3">
-            <div class="d-flex align-items-center gap-3">
-                <img src="../assets/img/logo.png" alt="Logo DISKOMINFOTIK" width="46" height="56">
+        <div class="sidebar-brand-box d-none d-md-flex align-items-center justify-content-between mb-4 p-3 overflow-hidden">
+            <div class="d-flex align-items-center gap-2">
+                <img src="../assets/img/logo.png" alt="Logo DISKOMINFOTIK" width="36" height="44" style="object-fit: contain; flex-shrink: 0;">
                 <div>
-                    <div class="logo-title">DISKOMINFOTIK</div>
-                    <div class="logo-subtitle">Provinsi Riau</div>
+                    <div class="logo-title" style="font-size: 15px;">DISKOMINFOTIK</div>
+                    <div class="logo-subtitle" style="font-size: 10px;">Provinsi Riau</div>
                 </div>
             </div>
-            <img src="../assets/img/image.png" alt="Logo Diskominfo" width="48" height="48" style="object-fit: contain;">
+            <img src="../assets/img/image.png" alt="Logo Diskominfo" width="34" height="34" style="object-fit: contain; flex-shrink: 0;">
         </div>
 
         <!-- Divider Desktop -->

@@ -212,13 +212,13 @@ function getBadgeClass($type) {
 
                 <ul class="nav flex-column pt-2 w-100">
                     <li>
-                        <a href="/visitor/index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
+                        <a href="index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
                             <i class="bi bi-folder-fill"></i>
                             <span>Semua Dokumen</span>
                         </a>
                     </li>
                     <li class="mt-2">
-                        <a href="/admin/login.php" class="nav-link text-warning fw-semibold">
+                        <a href="../admin/login.php" class="nav-link text-warning fw-semibold">
                             <i class="bi bi-shield-lock-fill"></i>
                             <span>Login Admin</span>
                         </a>
@@ -226,7 +226,7 @@ function getBadgeClass($type) {
 
                     <!-- Fitur Jenis Dokumen -->
                     <li>
-                        <a href="#jenisDokumenCollapseVisitor" class="nav-link d-flex align-items-center justify-content-between <?= (!empty($katSurat) || !empty($namaSurat)) ? 'active' : ''; ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= (!empty($katSurat) || !empty($namaSurat)) ? 'true' : 'false'; ?>">
+                        <a href="#jenisDokumenCollapseVisitor" class="nav-link d-flex align-items-center justify-content-between <?= (!empty($katSurat) || !empty($namaSurat)) ? 'active' : ''; ?>" data-bs-toggle="collapse" data-bs-target="#jenisDokumenCollapseVisitor" role="button" aria-expanded="<?= (!empty($katSurat) || !empty($namaSurat)) ? 'true' : 'false'; ?>">
                             <div class="d-flex align-items-center gap-3">
                                 <i class="bi bi-layers-fill"></i>
                                 <span>Jenis Dokumen</span>
@@ -241,7 +241,7 @@ function getBadgeClass($type) {
                                     $db_docs = isset($db_docs_by_kat[$kat_title]) ? $db_docs_by_kat[$kat_title] : [];
                                 ?>
                                     <li class="sidebar-sub-item">
-                                        <a href="#<?= $collapse_id ?>" class="sidebar-sub-toggle <?= $is_this_kat ? 'active' : '' ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= $is_this_kat ? 'true' : 'false' ?>">
+                                        <a href="#<?= $collapse_id ?>" class="sidebar-sub-toggle <?= $is_this_kat ? 'active' : '' ?>" data-bs-toggle="collapse" data-bs-target="#<?= $collapse_id ?>" role="button" aria-expanded="<?= $is_this_kat ? 'true' : 'false' ?>">
                                             <span class="d-flex align-items-center gap-2">
                                                 <i class="bi <?= $kat_data['icon'] ?>"></i>
                                                 <span><?= htmlspecialchars($kat_title) ?></span>

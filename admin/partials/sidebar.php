@@ -98,19 +98,19 @@ if (isset($koneksi) && $koneksi) {
 
         <ul class="nav flex-column pt-2 w-100">
             <li>
-                <a href="dashboard.php" class="nav-link <?= ($current_page == 'dashboard.php') ? 'active' : ''; ?>">
+                <a href="/admin/dashboard.php" class="nav-link <?= ($current_page == 'dashboard.php') ? 'active' : ''; ?>">
                     <i class="bi bi-grid-fill"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="dokumen.php" class="nav-link <?= ($current_page == 'dokumen.php' && empty($get_kat) && empty($get_nama) || $current_page == 'edit_dokumen.php') ? 'active' : ''; ?>">
+                <a href="/admin/dokumen.php" class="nav-link <?= ($current_page == 'dokumen.php' && empty($get_kat) && empty($get_nama) || $current_page == 'edit_dokumen.php') ? 'active' : ''; ?>">
                     <i class="bi bi-folder-fill"></i>
                     <span>Kelola Dokumen</span>
                 </a>
             </li>
             <li>
-                <a href="tambah_dokumen.php" class="nav-link <?= ($current_page == 'tambah_dokumen.php') ? 'active' : ''; ?>">
+                <a href="/admin/tambah_dokumen.php" class="nav-link <?= ($current_page == 'tambah_dokumen.php') ? 'active' : ''; ?>">
                     <i class="bi bi-cloud-arrow-up-fill"></i>
                     <span>Upload Dokumen</span>
                 </a>
@@ -118,7 +118,7 @@ if (isset($koneksi) && $koneksi) {
 
             <!-- Fitur Jenis Dokumen -->
             <li>
-                <a href="#jenisDokumenCollapse" class="nav-link d-flex align-items-center justify-content-between <?= (!empty($get_kat) || !empty($get_nama)) ? 'active' : ''; ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= (!empty($get_kat) || !empty($get_nama)) ? 'true' : 'false'; ?>">
+                <a href="#jenisDokumenCollapse" class="nav-link d-flex align-items-center justify-content-between <?= (!empty($get_kat) || !empty($get_nama)) ? 'active' : ''; ?>" data-bs-toggle="collapse" data-bs-target="#jenisDokumenCollapse" role="button" aria-expanded="<?= (!empty($get_kat) || !empty($get_nama)) ? 'true' : 'false'; ?>">
                     <div class="d-flex align-items-center gap-3">
                         <i class="bi bi-layers-fill"></i>
                         <span>Jenis Dokumen</span>
@@ -133,7 +133,7 @@ if (isset($koneksi) && $koneksi) {
                             $db_docs = isset($db_docs_by_kat[$kat_title]) ? $db_docs_by_kat[$kat_title] : [];
                         ?>
                             <li class="sidebar-sub-item">
-                                <a href="#<?= $collapse_id ?>" class="sidebar-sub-toggle <?= $is_this_kat ? 'active' : '' ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= $is_this_kat ? 'true' : 'false' ?>">
+                                <a href="#<?= $collapse_id ?>" class="sidebar-sub-toggle <?= $is_this_kat ? 'active' : '' ?>" data-bs-toggle="collapse" data-bs-target="#<?= $collapse_id ?>" role="button" aria-expanded="<?= $is_this_kat ? 'true' : 'false' ?>">
                                     <span class="d-flex align-items-center gap-2">
                                         <i class="bi <?= $kat_data['icon'] ?>"></i>
                                         <span><?= htmlspecialchars($kat_title) ?></span>
@@ -142,7 +142,7 @@ if (isset($koneksi) && $koneksi) {
                                 </a>
                                 <div class="collapse <?= $is_this_kat ? 'show' : '' ?>" id="<?= $collapse_id ?>">
                                     <div class="sidebar-nested-sub">
-                                        <a href="dokumen.php?kat_surat=<?= urlencode($kat_title) ?>" class="sidebar-nested-link <?= ($get_kat === $kat_title && empty($get_nama)) ? 'active' : '' ?>" style="font-weight: 600; opacity: 0.95;">
+                                        <a href="/admin/dokumen.php?kat_surat=<?= urlencode($kat_title) ?>" class="sidebar-nested-link <?= ($get_kat === $kat_title && empty($get_nama)) ? 'active' : '' ?>" style="font-weight: 600; opacity: 0.95;">
                                             <i class="bi bi-grid-3x3-gap-fill me-1"></i> Semua <?= htmlspecialchars($kat_title) ?>
                                         </a>
                                         <?php if (empty($db_docs)): ?>
@@ -151,7 +151,7 @@ if (isset($koneksi) && $koneksi) {
                                             <?php foreach ($db_docs as $item): 
                                                 $is_item_active = ($get_nama === $item && $get_kat === $kat_title);
                                             ?>
-                                                <a href="dokumen.php?kat_surat=<?= urlencode($kat_title) ?>&nama_surat=<?= urlencode($item) ?>" class="sidebar-nested-link <?= $is_item_active ? 'active' : '' ?>">
+                                                <a href="/admin/dokumen.php?kat_surat=<?= urlencode($kat_title) ?>&nama_surat=<?= urlencode($item) ?>" class="sidebar-nested-link <?= $is_item_active ? 'active' : '' ?>">
                                                     <?= htmlspecialchars($item) ?>
                                                 </a>
                                             <?php endforeach; ?>
@@ -165,7 +165,7 @@ if (isset($koneksi) && $koneksi) {
             </li>
 
             <li>
-                <a href="logout.php" class="nav-link <?= ($current_page == 'logout.php') ? 'active' : ''; ?>">
+                <a href="/admin/logout.php" class="nav-link <?= ($current_page == 'logout.php') ? 'active' : ''; ?>">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>

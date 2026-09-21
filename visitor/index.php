@@ -212,13 +212,13 @@ function getBadgeClass($type) {
 
                 <ul class="nav flex-column pt-2 w-100">
                     <li>
-                        <a href="index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
+                        <a href="/visitor/index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
                             <i class="bi bi-folder-fill"></i>
                             <span>Semua Dokumen</span>
                         </a>
                     </li>
                     <li class="mt-2">
-                        <a href="../admin/login.php" class="nav-link text-warning fw-semibold">
+                        <a href="/admin/login.php" class="nav-link text-warning fw-semibold">
                             <i class="bi bi-shield-lock-fill"></i>
                             <span>Login Admin</span>
                         </a>
@@ -250,7 +250,7 @@ function getBadgeClass($type) {
                                         </a>
                                         <div class="collapse <?= $is_this_kat ? 'show' : '' ?>" id="<?= $collapse_id ?>">
                                             <div class="sidebar-nested-sub">
-                                                <a href="index.php?kat_surat=<?= urlencode($kat_title) ?>" class="sidebar-nested-link <?= ($katSurat === $kat_title && empty($namaSurat)) ? 'active' : '' ?>" style="font-weight: 600; opacity: 0.95;">
+                                                <a href="/visitor/index.php?kat_surat=<?= urlencode($kat_title) ?>" class="sidebar-nested-link <?= ($katSurat === $kat_title && empty($namaSurat)) ? 'active' : '' ?>" style="font-weight: 600; opacity: 0.95;">
                                                     <i class="bi bi-grid-3x3-gap-fill me-1"></i> Semua <?= htmlspecialchars($kat_title) ?>
                                                 </a>
                                                 <?php if (empty($db_docs)): ?>
@@ -259,7 +259,7 @@ function getBadgeClass($type) {
                                                     <?php foreach ($db_docs as $item): 
                                                         $is_item_active = ($namaSurat === $item && $katSurat === $kat_title);
                                                     ?>
-                                                        <a href="index.php?kat_surat=<?= urlencode($kat_title) ?>&nama_surat=<?= urlencode($item) ?>" class="sidebar-nested-link <?= $is_item_active ? 'active' : '' ?>">
+                                                        <a href="/visitor/index.php?kat_surat=<?= urlencode($kat_title) ?>&nama_surat=<?= urlencode($item) ?>" class="sidebar-nested-link <?= $is_item_active ? 'active' : '' ?>">
                                                             <?= htmlspecialchars($item) ?>
                                                         </a>
                                                     <?php endforeach; ?>

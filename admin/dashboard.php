@@ -1,11 +1,6 @@
 <?php
-session_start();
 include("../config/koneksi.php");
-
-if (!isset($_SESSION['id_admin'])) {
-    header("Location: login.php");
-    exit;
-}
+require_admin_login();
 ?>
 
 <!DOCTYPE html>

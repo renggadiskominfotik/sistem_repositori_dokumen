@@ -1,10 +1,9 @@
 <?php
-session_start();
 include("../config/koneksi.php");
 
 // Jika admin sudah login, langsung ke dashboard
-if (isset($_SESSION['id_admin'])) {
-    header("Location: dashboard.php");
+if (is_admin_logged_in()) {
+    header("Location: /admin/dashboard.php");
     exit;
 }
 
@@ -24,10 +23,14 @@ if (isset($_POST['login'])) {
         $data = mysqli_fetch_assoc($query);
 
         $_SESSION['id_admin'] = $data['id_admin'];
-        $_SESSION['nama'] = $data['nama'];
+        $_SESSION['nama']     = $data['nama'];
         $_SESSION['username'] = $data['username'];
 
-        header("Location: dashboard.php");
+        setcookie('admin_id', $data['id_admin'], time() + 604800, '/');
+        setcookie('admin_nama', $data['nama'], time() + 604800, '/');
+        setcookie('admin_user', $data['username'], time() + 604800, '/');
+
+        header("Location: /admin/dashboard.php");
         exit;
 
     } else {

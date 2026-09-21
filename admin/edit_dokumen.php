@@ -1,12 +1,6 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['id_admin'])) {
-    header("Location: login.php");
-    exit;
-}
-
 include("../config/koneksi.php");
+require_admin_login();
 
 // Ambil ID dari URL
 $id = mysqli_real_escape_string($koneksi, $_GET['id']);

@@ -1,10 +1,7 @@
 <?php
 include("../config/koneksi.php");
 
-if (!isset($_SESSION['id_admin'])) {
-    header("Location: /admin/login.php");
-    exit;
-}
+require_admin_login();
 
 if (isset($_POST['simpan'])) {
     $judul     = mysqli_real_escape_string($koneksi, $_POST['judul']);

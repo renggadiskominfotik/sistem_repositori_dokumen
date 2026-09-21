@@ -1,12 +1,6 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['id_admin'])) {
-    header("Location: login.php");
-    exit;
-}
-
 include("../config/koneksi.php");
+require_admin_login();
 
 // Helper function for badges
 function getBadgeClass($type) {

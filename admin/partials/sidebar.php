@@ -1,5 +1,6 @@
 <?php
-$current_page = basename($_SERVER['PHP_SELF']);
+$script_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$current_page = basename($script_path);
 $get_kat = isset($_GET['kat_surat']) ? $_GET['kat_surat'] : '';
 $get_nama = isset($_GET['nama_surat']) ? $_GET['nama_surat'] : '';
 
@@ -26,6 +27,30 @@ $jenis_dokumen_list = [
     'Dokumen Kerja Sama' => ['icon' => 'bi-handbag-fill'],
     'Dokumentasi Kegiatan' => ['icon' => 'bi-camera-video-fill'],
 ];
+
+// Fetch all documents grouped by category in one safe query
+$db_docs_by_kat = [];
+if (isset($koneksi) && $koneksi) {
+    try {
+        $res = @mysqli_query($koneksi, "SELECT DISTINCT jenis_dokumen, judul FROM dokumen ORDER BY id_dokumen DESC");
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $kat = $r['jenis_dokumen'];
+                $jdl = $r['judul'];
+                if (!empty($kat) && !empty($jdl)) {
+                    if (!isset($db_docs_by_kat[$kat])) {
+                        $db_docs_by_kat[$kat] = [];
+                    }
+                    if (!in_array($jdl, $db_docs_by_kat[$kat])) {
+                        $db_docs_by_kat[$kat][] = $jdl;
+                    }
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        // Safe fallback
+    }
+}
 ?>
 
 <!-- Header Topbar untuk Mobile (Layar Handphone < 768px) -->
@@ -105,20 +130,7 @@ $jenis_dokumen_list = [
                         <?php foreach ($jenis_dokumen_list as $kat_title => $kat_data): 
                             $is_this_kat = ($get_kat === $kat_title);
                             $collapse_id = "sub_" . preg_replace('/[^a-zA-Z0-9]/', '', $kat_title);
-
-                            // Fetch documents created by admin in database for this category
-                            $db_docs = [];
-                            if (isset($koneksi) && $koneksi) {
-                                $kat_db_esc = mysqli_real_escape_string($koneksi, $kat_title);
-                                $res = mysqli_query($koneksi, "SELECT DISTINCT judul FROM dokumen WHERE jenis_dokumen='$kat_db_esc' ORDER BY id_dokumen DESC");
-                                if ($res) {
-                                    while ($r = mysqli_fetch_assoc($res)) {
-                                        if (!empty($r['judul']) && !in_array($r['judul'], $db_docs)) {
-                                            $db_docs[] = $r['judul'];
-                                        }
-                                    }
-                                }
-                            }
+                            $db_docs = isset($db_docs_by_kat[$kat_title]) ? $db_docs_by_kat[$kat_title] : [];
                         ?>
                             <li class="sidebar-sub-item">
                                 <a href="#<?= $collapse_id ?>" class="sidebar-sub-toggle <?= $is_this_kat ? 'active' : '' ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= $is_this_kat ? 'true' : 'false' ?>">

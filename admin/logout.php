@@ -1,12 +1,11 @@
-<?php
-include("../config/koneksi.php");
+<?phpgit push -u origin main
 
-session_unset();
+session_start();
+
 session_destroy();
 
-setcookie('admin_id', '', time() - 3600, '/');
-setcookie('admin_nama', '', time() - 3600, '/');
-setcookie('admin_user', '', time() - 3600, '/');
+header("Location: login.php");
 
-header("Location: /admin/login.php");
 exit;
+
+?>

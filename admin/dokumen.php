@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
             modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
             modalBadge.textContent = jenis;
 
-            const fileUrl = '../assets/uploads/' + encodeURIComponent(file);
+            const fileUrl = '/assets/uploads/' + encodeURIComponent(file);
             document.getElementById('modalDownloadBtn').href = fileUrl;
             document.getElementById('modalNewTabBtn').href = fileUrl;
 

@@ -212,15 +212,9 @@ function getBadgeClass($type) {
 
                 <ul class="nav flex-column pt-2 w-100">
                     <li>
-                        <a href="index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
+                        <a href="/visitor/index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
                             <i class="bi bi-folder-fill"></i>
                             <span>Semua Dokumen</span>
-                        </a>
-                    </li>
-                    <li class="mt-2">
-                        <a href="../admin/login.php" class="nav-link text-warning fw-semibold">
-                            <i class="bi bi-shield-lock-fill"></i>
-                            <span>Login Admin</span>
                         </a>
                     </li>
 
@@ -534,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
             modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
             modalBadge.textContent = jenis;
 
-            const fileUrl = '../assets/uploads/' + encodeURIComponent(file);
+            const fileUrl = '/assets/uploads/' + encodeURIComponent(file);
             document.getElementById('modalDownloadBtn').href = fileUrl;
             document.getElementById('modalNewTabBtn').href = fileUrl;
 

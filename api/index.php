@@ -8,13 +8,23 @@ if (session_status() === PHP_SESSION_NONE) {
     @session_start();
 }
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$filePath = __DIR__ . '/..' . $uri;
+$rawUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri    = rawurldecode($rawUri);
 
 if ($uri === '/' || $uri === '') {
     chdir(__DIR__ . '/../visitor');
     require __DIR__ . '/../visitor/index.php';
     exit;
+}
+
+$filePath = __DIR__ . '/..' . $uri;
+
+// Check alternate path for filenames containing '+'
+if (!file_exists($filePath)) {
+    $altPath = __DIR__ . '/..' . str_replace(' ', '+', $uri);
+    if (file_exists($altPath)) {
+        $filePath = $altPath;
+    }
 }
 
 if (file_exists($filePath) && !is_dir($filePath)) {
@@ -36,6 +46,8 @@ if (file_exists($filePath) && !is_dir($filePath)) {
 
     if (isset($mimeTypes[$extension])) {
         header('Content-Type: ' . $mimeTypes[$extension]);
+        header('Content-Length: ' . filesize($filePath));
+        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
         readfile($filePath);
         exit;
     }

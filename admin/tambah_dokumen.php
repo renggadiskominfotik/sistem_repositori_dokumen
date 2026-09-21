@@ -1,38 +1,41 @@
 <?php
-session_start();
+include("../config/koneksi.php");
 
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login.php");
+    header("Location: /admin/login.php");
     exit;
 }
 
-include("../config/koneksi.php");
-
-if(isset($_POST['simpan'])){
-
-    $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
-    $jenis = mysqli_real_escape_string($koneksi, $_POST['kategori_surat']);
+if (isset($_POST['simpan'])) {
+    $judul     = mysqli_real_escape_string($koneksi, $_POST['judul']);
+    $jenis     = mysqli_real_escape_string($koneksi, $_POST['kategori_surat']);
     $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
-    $tanggal = date("Y-m-d");
-    $id_admin = $_SESSION['id_admin'];
+    $tanggal   = date("Y-m-d");
+    $id_admin  = $_SESSION['id_admin'];
 
-    $rawNamaFile = $_FILES['nama_file']['name'];
-    $tmpFile = $_FILES['nama_file']['tmp_name'];
+    $rawNamaFile = isset($_FILES['nama_file']['name']) ? $_FILES['nama_file']['name'] : '';
+    $tmpFile     = isset($_FILES['nama_file']['tmp_name']) ? $_FILES['nama_file']['tmp_name'] : '';
 
-    // Move uploaded file to uploads directory
-    move_uploaded_file($tmpFile, "../assets/uploads/".$rawNamaFile);
+    if (!empty($rawNamaFile) && !empty($tmpFile)) {
+        $targetDir = "../assets/uploads/";
+        if (!is_dir($targetDir)) {
+            @mkdir($targetDir, 0777, true);
+        }
+        @move_uploaded_file($tmpFile, $targetDir . $rawNamaFile);
+    }
 
     $namaFile = mysqli_real_escape_string($koneksi, $rawNamaFile);
 
-    mysqli_query($koneksi,"INSERT INTO dokumen 
+    mysqli_query($koneksi, "INSERT INTO dokumen 
     (judul, jenis_dokumen, deskripsi, nama_file, tanggal_upload, id_admin) 
     VALUES 
     ('$judul','$jenis','$deskripsi','$namaFile','$tanggal','$id_admin')");
 
     echo "<script>
     alert('Dokumen berhasil ditambahkan');
-    window.location='dokumen.php';
+    window.location='/admin/dokumen.php';
     </script>";
+    exit;
 }
 ?>
 
@@ -63,11 +66,11 @@ if(isset($_POST['simpan'])){
         <?php include("partials/sidebar.php"); ?>
 
         <!-- Content Area -->
-        <div class="col-md-9 p-5 admin-content-area">
+        <div class="col-md-9 p-4 p-md-5 admin-content-area">
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="admin-page-header m-0">Upload Dokumen Baru</h2>
-                <a href="dokumen.php" class="btn btn-outline-secondary px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2">
+                <a href="/admin/dokumen.php" class="btn btn-outline-secondary px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2">
                     <i class="bi bi-arrow-left"></i>
                     <span>Kembali</span>
                 </a>
@@ -141,7 +144,7 @@ if(isset($_POST['simpan'])){
                             </div>
 
                             <div class="pt-3 border-top border-light d-flex justify-content-end gap-2">
-                                <a href="dokumen.php" class="btn btn-outline-secondary px-4 py-2 fw-semibold">Batal</a>
+                                <a href="/admin/dokumen.php" class="btn btn-outline-secondary px-4 py-2 fw-semibold">Batal</a>
                                 <button type="submit" name="simpan" class="btn btn-primary px-4 py-2 fw-semibold d-flex align-items-center gap-2">
                                     <i class="bi bi-save-fill"></i>
                                     <span>Simpan Dokumen</span>

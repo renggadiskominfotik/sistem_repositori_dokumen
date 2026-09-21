@@ -1,5 +1,12 @@
 <?php
 
+if (session_status() === PHP_SESSION_NONE) {
+    if (is_dir('/tmp') && is_writable('/tmp')) {
+        @session_save_path('/tmp');
+    }
+    @session_start();
+}
+
 function get_db_env($key, $default = '') {
     if (isset($_ENV[$key]) && $_ENV[$key] !== '') return $_ENV[$key];
     if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') return $_SERVER[$key];
@@ -19,4 +26,3 @@ $koneksi = mysqli_connect($host, $user, $password, $database, (int)$port);
 if (!$koneksi) {
     die("Koneksi gagal : " . mysqli_connect_error());
 }
-

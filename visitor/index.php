@@ -129,7 +129,7 @@ function getBadgeClass($type) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
@@ -190,6 +190,12 @@ function getBadgeClass($type) {
                         <a href="index.php" class="nav-link <?= (empty($katSurat) && empty($namaSurat) && empty($jenis) && empty($cari)) ? 'active' : ''; ?>">
                             <i class="bi bi-folder-fill"></i>
                             <span>Semua Dokumen</span>
+                        </a>
+                    </li>
+                    <li class="mt-2">
+                        <a href="../admin/login.php" class="nav-link text-warning fw-semibold">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Login Admin</span>
                         </a>
                     </li>
 
@@ -467,7 +473,7 @@ function getBadgeClass($type) {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- JSZip & docx-preview for direct browser rendering of DOCX documents -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js"></script>

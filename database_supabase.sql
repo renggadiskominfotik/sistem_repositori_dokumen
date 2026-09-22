@@ -27,6 +27,21 @@ INSERT INTO dokumen (id_dokumen, judul, jenis_dokumen, deskripsi, nama_file, tan
 (3, 'peraturan daerah', 'Regulasi Pusat', '', '(111-117)+JURNAL+DANANG+-+JITTER.pdf', '2026-09-09', 1)
 ON CONFLICT (id_dokumen) DO NOTHING;
 
--- SINKRONISASI SEQUENCE ID AGAR FITUR TAMBAH DOKUMEN (INSERT) PADA POSTGRESQL/SUPABASE BERJALAN LANCAR
+-- SINKRONISASI SEQUENCE ID UNTUK AUTO-INCREMENT
 SELECT setval(pg_get_serial_sequence('admin', 'id_admin'), COALESCE(max(id_admin), 1)) FROM admin;
 SELECT setval(pg_get_serial_sequence('dokumen', 'id_dokumen'), COALESCE(max(id_dokumen), 1)) FROM dokumen;
+
+-- BUKA IZIN UPLOAD & AKSES FILE SUPABASE STORAGE UNTUK BUCKET 'dokumen'
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('dokumen', 'dokumen', true) 
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Allow Public Select" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Public Insert" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Public Update" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Public Delete" ON storage.objects;
+
+CREATE POLICY "Allow Public Select" ON storage.objects FOR SELECT USING (bucket_id = 'dokumen');
+CREATE POLICY "Allow Public Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'dokumen');
+CREATE POLICY "Allow Public Update" ON storage.objects FOR UPDATE USING (bucket_id = 'dokumen');
+CREATE POLICY "Allow Public Delete" ON storage.objects FOR DELETE USING (bucket_id = 'dokumen');

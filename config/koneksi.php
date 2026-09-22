@@ -21,7 +21,7 @@ $password = get_db_env('DB_PASSWORD', get_db_env('MYSQLPASSWORD', ''));
 $database = get_db_env('DB_NAME', get_db_env('MYSQLDATABASE', 'db_repository_dokumen'));
 $port     = get_db_env('DB_PORT', get_db_env('MYSQLPORT', '3306'));
 
-$is_postgres = ($port == 5432 || strpos($host, 'supabase') !== false || strpos($host, 'postgres') !== false);
+$is_postgres = ($port == 5432 || $port == 6543 || strpos($host, 'supabase') !== false || strpos($host, 'postgres') !== false);
 
 $koneksi = null;
 $pdo = null;

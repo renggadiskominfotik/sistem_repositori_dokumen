@@ -161,22 +161,48 @@ function require_admin_login() {
     }
 }
 
+function ensure_supabase_bucket_exists($supabaseUrl, $supabaseKey, $bucket) {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/bucket';
+    $payload = json_encode(['id' => $bucket, 'name' => $bucket, 'public' => true]);
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $supabaseKey,
+            'apikey: ' . $supabaseKey,
+            'Content-Type: application/json'
+        ]);
+        @curl_exec($ch);
+        @curl_close($ch);
+    }
+}
+
 function upload_to_storage($tmpFilePath, $filename) {
-    if (empty($tmpFilePath) || empty($filename)) return;
+    if (empty($tmpFilePath) || empty($filename)) return false;
 
     $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
     $supabaseKey = get_db_env('SUPABASE_SERVICE_KEY', get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mY2Z0YXFwdXZwZWRjbWFrZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNzQ4MTYsImV4cCI6MjEwNTY1MDgxNn0.KySSRt6e1o-5E5_q8_dPvO8SDVzH677g_rqjmq6tXVA')));
     $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
 
-    // Always copy to local assets/uploads if possible
+    // Copy to local if possible
     $targetDir = __DIR__ . '/../assets/uploads/';
     if (!is_dir($targetDir)) {
         @mkdir($targetDir, 0777, true);
     }
     @copy($tmpFilePath, $targetDir . basename($filename));
 
-    // Upload to Supabase Storage Bucket via REST API
     if (!empty($supabaseUrl) && !empty($supabaseKey)) {
+        ensure_supabase_bucket_exists($supabaseUrl, $supabaseKey, $bucket);
+
         $cleanFilename = str_replace(' ', '%20', basename($filename));
         $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/object/' . $bucket . '/' . $cleanFilename;
 
@@ -194,6 +220,8 @@ function upload_to_storage($tmpFilePath, $filename) {
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $fileData);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, [
                     'Authorization: Bearer ' . $supabaseKey,
                     'apikey: ' . $supabaseKey,
@@ -202,9 +230,28 @@ function upload_to_storage($tmpFilePath, $filename) {
                 ]);
                 $resp = @curl_exec($ch);
                 @curl_close($ch);
+            } else {
+                $opts = [
+                    'http' => [
+                        'method'  => 'POST',
+                        'header'  => "Authorization: Bearer {$supabaseKey}\r\n" .
+                                     "apikey: {$supabaseKey}\r\n" .
+                                     "Content-Type: {$mimeType}\r\n" .
+                                     "x-upsert: true\r\n",
+                        'content' => $fileData,
+                        'ignore_errors' => true
+                    ],
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false
+                    ]
+                ];
+                $context = stream_context_create($opts);
+                @file_get_contents($endpoint, false, $context);
             }
         }
     }
+    return true;
 }
 
 function delete_from_storage($filename) {
@@ -219,18 +266,22 @@ function delete_from_storage($filename) {
         @unlink($targetFile);
     }
 
-    if (!empty($supabaseUrl) && !empty($supabaseKey) && function_exists('curl_init')) {
+    if (!empty($supabaseUrl) && !empty($supabaseKey)) {
         $cleanFilename = str_replace(' ', '%20', basename($filename));
         $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/object/' . $bucket . '/' . $cleanFilename;
 
-        $ch = curl_init($endpoint);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $supabaseKey,
-            'apikey: ' . $supabaseKey
-        ]);
-        @curl_exec($ch);
-        @curl_close($ch);
+        if (function_exists('curl_init')) {
+            $ch = curl_init($endpoint);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $supabaseKey,
+                'apikey: ' . $supabaseKey
+            ]);
+            @curl_exec($ch);
+            @curl_close($ch);
+        }
     }
 }

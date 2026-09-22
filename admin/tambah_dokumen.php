@@ -14,11 +14,7 @@ if (isset($_POST['simpan'])) {
     $tmpFile     = isset($_FILES['nama_file']['tmp_name']) ? $_FILES['nama_file']['tmp_name'] : '';
 
     if (!empty($rawNamaFile) && !empty($tmpFile)) {
-        $targetDir = "../assets/uploads/";
-        if (!is_dir($targetDir)) {
-            @mkdir($targetDir, 0777, true);
-        }
-        @move_uploaded_file($tmpFile, $targetDir . $rawNamaFile);
+        upload_to_storage($tmpFile, $rawNamaFile);
     }
 
     $namaFile = db_real_escape_string($koneksi, $rawNamaFile);

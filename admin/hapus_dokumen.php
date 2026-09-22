@@ -11,12 +11,9 @@ if ($id) {
     if ($query && db_num_rows($query) > 0) {
         $data = db_fetch_assoc($query);
 
-        // Hapus file dari folder uploads jika ada
+        // Hapus file dari storage & folder uploads jika ada
         if (!empty($data['nama_file'])) {
-            $file = "../assets/uploads/" . $data['nama_file'];
-            if (file_exists($file)) {
-                @unlink($file);
-            }
+            delete_from_storage($data['nama_file']);
         }
 
         // Hapus data dari database

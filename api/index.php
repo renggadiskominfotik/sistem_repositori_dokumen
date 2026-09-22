@@ -62,6 +62,17 @@ if (file_exists($filePath) && !is_dir($filePath)) {
     }
 }
 
+// If an asset under /assets/uploads/ was requested but not found locally, redirect to Supabase Storage
+if (strpos($uri, '/assets/uploads/') === 0 || strpos($uri, 'assets/uploads/') !== false) {
+    $filename = basename($uri);
+    $supabaseUrl = isset($_ENV['SUPABASE_URL']) && $_ENV['SUPABASE_URL'] !== '' ? $_ENV['SUPABASE_URL'] : 'https://ofcftaqpuvpedcmakfii.supabase.co';
+    $bucket = isset($_ENV['SUPABASE_BUCKET']) && $_ENV['SUPABASE_BUCKET'] !== '' ? $_ENV['SUPABASE_BUCKET'] : 'dokumen';
+    
+    $publicUrl = rtrim($supabaseUrl, '/') . '/storage/v1/object/public/' . $bucket . '/' . rawurlencode($filename);
+    header('Location: ' . $publicUrl);
+    exit;
+}
+
 // If an asset or non-php file was requested but does not exist, return true 404
 $extension = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
 if (!empty($extension) && $extension !== 'php') {

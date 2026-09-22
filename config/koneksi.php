@@ -160,3 +160,77 @@ function require_admin_login() {
         exit;
     }
 }
+
+function upload_to_storage($tmpFilePath, $filename) {
+    if (empty($tmpFilePath) || empty($filename)) return;
+
+    $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
+    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', ''));
+    $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
+
+    // Always copy to local assets/uploads if possible
+    $targetDir = __DIR__ . '/../assets/uploads/';
+    if (!is_dir($targetDir)) {
+        @mkdir($targetDir, 0777, true);
+    }
+    @copy($tmpFilePath, $targetDir . basename($filename));
+
+    // Upload to Supabase Storage Bucket via REST API
+    if (!empty($supabaseUrl) && !empty($supabaseKey)) {
+        $cleanFilename = rawurlencode(basename($filename));
+        $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/object/' . $bucket . '/' . $cleanFilename;
+
+        $fileData = @file_get_contents($tmpFilePath);
+        if ($fileData !== false) {
+            $mimeType = 'application/octet-stream';
+            if (function_exists('finfo_open')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mimeType = finfo_file($finfo, $tmpFilePath) ?: 'application/octet-stream';
+                finfo_close($finfo);
+            }
+
+            if (function_exists('curl_init')) {
+                $ch = curl_init($endpoint);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $fileData);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Bearer ' . $supabaseKey,
+                    'apikey: ' . $supabaseKey,
+                    'Content-Type: ' . $mimeType,
+                    'x-upsert: true'
+                ]);
+                @curl_exec($ch);
+                @curl_close($ch);
+            }
+        }
+    }
+}
+
+function delete_from_storage($filename) {
+    if (empty($filename)) return;
+
+    $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
+    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', ''));
+    $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
+
+    $targetFile = __DIR__ . '/../assets/uploads/' . basename($filename);
+    if (file_exists($targetFile)) {
+        @unlink($targetFile);
+    }
+
+    if (!empty($supabaseUrl) && !empty($supabaseKey) && function_exists('curl_init')) {
+        $cleanFilename = rawurlencode(basename($filename));
+        $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/object/' . $bucket . '/' . $cleanFilename;
+
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $supabaseKey,
+            'apikey: ' . $supabaseKey
+        ]);
+        @curl_exec($ch);
+        @curl_close($ch);
+    }
+}

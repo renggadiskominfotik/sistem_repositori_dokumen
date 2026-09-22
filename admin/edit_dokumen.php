@@ -29,7 +29,7 @@ if (isset($_POST['update'])) {
         $rawNamaFile = $_FILES['nama_file']['name'];
         $tmpFile = $_FILES['nama_file']['tmp_name'];
 
-        move_uploaded_file($tmpFile, "../assets/uploads/" . $rawNamaFile);
+        upload_to_storage($tmpFile, $rawNamaFile);
 
         $namaFile = db_real_escape_string($koneksi, $rawNamaFile);
 

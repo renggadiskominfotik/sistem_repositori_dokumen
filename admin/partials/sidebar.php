@@ -30,11 +30,11 @@ $jenis_dokumen_list = [
 
 // Fetch all documents grouped by category in one safe query
 $db_docs_by_kat = [];
-if (isset($koneksi) && $koneksi) {
+if (isset($koneksi) || isset($pdo)) {
     try {
-        $res = @mysqli_query($koneksi, "SELECT DISTINCT jenis_dokumen, judul FROM dokumen ORDER BY id_dokumen DESC");
+        $res = @db_query($koneksi, "SELECT DISTINCT jenis_dokumen, judul FROM dokumen ORDER BY id_dokumen DESC");
         if ($res) {
-            while ($r = mysqli_fetch_assoc($res)) {
+            while ($r = db_fetch_assoc($res)) {
                 $kat = $r['jenis_dokumen'];
                 $jdl = $r['judul'];
                 if (!empty($kat) && !empty($jdl)) {

@@ -3,11 +3,11 @@ include("../config/koneksi.php");
 require_admin_login();
 
 // Ambil ID dari URL
-$id = mysqli_real_escape_string($koneksi, $_GET['id']);
+$id = db_real_escape_string($koneksi, $_GET['id']);
 
 // Ambil data dokumen
-$query = mysqli_query($koneksi, "SELECT * FROM dokumen WHERE id_dokumen='$id'");
-$data = mysqli_fetch_assoc($query);
+$query = db_query($koneksi, "SELECT * FROM dokumen WHERE id_dokumen='$id'");
+$data = db_fetch_assoc($query);
 
 if (!$data) {
     echo "<script>
@@ -20,9 +20,9 @@ if (!$data) {
 // Proses Update
 if (isset($_POST['update'])) {
 
-    $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
-    $jenis = mysqli_real_escape_string($koneksi, $_POST['kategori_surat']);
-    $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
+    $judul = db_real_escape_string($koneksi, $_POST['judul']);
+    $jenis = db_real_escape_string($koneksi, $_POST['kategori_surat']);
+    $deskripsi = db_real_escape_string($koneksi, $_POST['deskripsi']);
 
     if ($_FILES['nama_file']['name'] != "") {
 
@@ -31,9 +31,9 @@ if (isset($_POST['update'])) {
 
         move_uploaded_file($tmpFile, "../assets/uploads/" . $rawNamaFile);
 
-        $namaFile = mysqli_real_escape_string($koneksi, $rawNamaFile);
+        $namaFile = db_real_escape_string($koneksi, $rawNamaFile);
 
-        mysqli_query($koneksi, "UPDATE dokumen SET 
+        db_query($koneksi, "UPDATE dokumen SET 
             judul='$judul', 
             jenis_dokumen='$jenis', 
             deskripsi='$deskripsi', 
@@ -42,7 +42,7 @@ if (isset($_POST['update'])) {
 
     } else {
 
-        mysqli_query($koneksi, "UPDATE dokumen SET 
+        db_query($koneksi, "UPDATE dokumen SET 
             judul='$judul', 
             jenis_dokumen='$jenis', 
             deskripsi='$deskripsi' 

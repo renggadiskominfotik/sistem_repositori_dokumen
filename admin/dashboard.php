@@ -56,10 +56,10 @@ require_admin_login();
                                 <div>
                                     <h6 class="text-secondary fw-semibold mb-1">Total Dokumen</h6>
                                     <?php
-                                    $jumlah = mysqli_query($koneksi,"SELECT * FROM dokumen");
+                                    $jumlah = db_query($koneksi,"SELECT * FROM dokumen");
                                     ?>
                                     <h2 class="fw-extrabold mb-0 text-dark">
-                                        <?php echo mysqli_num_rows($jumlah); ?>
+                                        <?php echo db_num_rows($jumlah); ?>
                                     </h2>
                                 </div>
                                 <div class="stat-icon-box">

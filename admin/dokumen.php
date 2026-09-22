@@ -54,7 +54,7 @@ function getBadgeClass($type) {
                     $text = trim($text);
                     if (empty($text)) return "1=1";
                     
-                    $clean_text = mysqli_real_escape_string($koneksi, $text);
+                    $clean_text = db_real_escape_string($koneksi, $text);
                     $conds = [];
                     
                     // 1. Matched exact phrase / substring
@@ -69,7 +69,7 @@ function getBadgeClass($type) {
                         foreach ($words as $w) {
                             $w_clean = trim($w);
                             if (strlen($w_clean) >= 2) {
-                                $w_db = mysqli_real_escape_string($koneksi, $w_clean);
+                                $w_db = db_real_escape_string($koneksi, $w_clean);
                                 $word_ands[] = "(judul LIKE '%$w_db%' OR deskripsi LIKE '%$w_db%' OR jenis_dokumen LIKE '%$w_db%')";
                             }
                         }
@@ -94,7 +94,7 @@ function getBadgeClass($type) {
                     foreach ($synonyms as $key => $values) {
                         if (stripos($text, $key) !== false) {
                             foreach ($values as $val) {
-                                $val_db = mysqli_real_escape_string($koneksi, $val);
+                                $val_db = db_real_escape_string($koneksi, $val);
                                 $conds[] = "judul LIKE '%$val_db%' OR deskripsi LIKE '%$val_db%'";
                             }
                         }
@@ -164,7 +164,7 @@ function getBadgeClass($type) {
                         }
 
                         if (!empty($get_kat)) {
-                            $kat_db = mysqli_real_escape_string($koneksi, $get_kat);
+                            $kat_db = db_real_escape_string($koneksi, $get_kat);
                             $sql .= " AND jenis_dokumen='$kat_db'";
                         }
 
@@ -172,12 +172,12 @@ function getBadgeClass($type) {
                             $sql .= " AND " . buildSmartSearchClauseAdmin($get_nama, $koneksi);
                         }
                         $sql .= " ORDER BY id_dokumen DESC";
-                        $query = mysqli_query($koneksi, $sql);
+                        $query = db_query($koneksi, $sql);
                         
-                        if (mysqli_num_rows($query) == 0) {
+                        if (db_num_rows($query) == 0) {
                             echo "<tr><td colspan='5' class='text-center py-5 text-muted'>Belum ada dokumen yang sesuai dengan filter.</td></tr>";
                         } else {
-                            while($data = mysqli_fetch_assoc($query)){
+                            while($data = db_fetch_assoc($query)){
                                 $kat_display = $data['jenis_dokumen'];
                         ?>
                             <tr>

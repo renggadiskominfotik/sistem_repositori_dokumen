@@ -4,9 +4,9 @@ include("../config/koneksi.php");
 require_admin_login();
 
 if (isset($_POST['simpan'])) {
-    $judul     = mysqli_real_escape_string($koneksi, $_POST['judul']);
-    $jenis     = mysqli_real_escape_string($koneksi, $_POST['kategori_surat']);
-    $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
+    $judul     = db_real_escape_string($koneksi, $_POST['judul']);
+    $jenis     = db_real_escape_string($koneksi, $_POST['kategori_surat']);
+    $deskripsi = db_real_escape_string($koneksi, $_POST['deskripsi']);
     $tanggal   = date("Y-m-d");
     $id_admin  = $_SESSION['id_admin'];
 
@@ -21,9 +21,9 @@ if (isset($_POST['simpan'])) {
         @move_uploaded_file($tmpFile, $targetDir . $rawNamaFile);
     }
 
-    $namaFile = mysqli_real_escape_string($koneksi, $rawNamaFile);
+    $namaFile = db_real_escape_string($koneksi, $rawNamaFile);
 
-    mysqli_query($koneksi, "INSERT INTO dokumen 
+    db_query($koneksi, "INSERT INTO dokumen 
     (judul, jenis_dokumen, deskripsi, nama_file, tanggal_upload, id_admin) 
     VALUES 
     ('$judul','$jenis','$deskripsi','$namaFile','$tanggal','$id_admin')");

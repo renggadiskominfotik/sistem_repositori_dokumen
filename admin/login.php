@@ -10,17 +10,17 @@ if (is_admin_logged_in()) {
 // Proses login
 if (isset($_POST['login'])) {
 
-    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
-    $password = mysqli_real_escape_string($koneksi, $_POST['password']);
+    $username = db_real_escape_string($koneksi, $_POST['username']);
+    $password = db_real_escape_string($koneksi, $_POST['password']);
 
-    $query = mysqli_query(
+    $query = db_query(
         $koneksi,
         "SELECT * FROM admin WHERE username='$username' AND password='$password'"
     );
 
-    if (mysqli_num_rows($query) > 0) {
+    if (db_num_rows($query) > 0) {
 
-        $data = mysqli_fetch_assoc($query);
+        $data = db_fetch_assoc($query);
 
         $_SESSION['id_admin'] = $data['id_admin'];
         $_SESSION['nama']     = $data['nama'];

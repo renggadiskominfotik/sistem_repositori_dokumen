@@ -165,7 +165,7 @@ function upload_to_storage($tmpFilePath, $filename) {
     if (empty($tmpFilePath) || empty($filename)) return;
 
     $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
-    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', ''));
+    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mY2Z0YXFwdXZwZWRjbWFrZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNzQ4MTYsImV4cCI6MjEwNTY1MDgxNn0.KySSRt6e1o-5E5_q8_dPvO8SDVzH677g_rqjmq6tXVA'));
     $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
 
     // Always copy to local assets/uploads if possible
@@ -211,7 +211,7 @@ function delete_from_storage($filename) {
     if (empty($filename)) return;
 
     $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
-    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', ''));
+    $supabaseKey = get_db_env('SUPABASE_KEY', get_db_env('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mY2Z0YXFwdXZwZWRjbWFrZmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNzQ4MTYsImV4cCI6MjEwNTY1MDgxNn0.KySSRt6e1o-5E5_q8_dPvO8SDVzH677g_rqjmq6tXVA'));
     $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
 
     $targetFile = __DIR__ . '/../assets/uploads/' . basename($filename);

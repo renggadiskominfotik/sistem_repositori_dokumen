@@ -62,8 +62,18 @@ class DBResult {
 
     public function __construct($stmt) {
         if ($stmt instanceof PDOStatement) {
-            $this->rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $this->numRows = count($this->rows);
+            try {
+                if ($stmt->columnCount() > 0) {
+                    $this->rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $this->numRows = count($this->rows);
+                } else {
+                    $this->rows = [];
+                    $this->numRows = $stmt->rowCount();
+                }
+            } catch (Throwable $e) {
+                $this->rows = [];
+                $this->numRows = $stmt->rowCount();
+            }
         }
     }
 }
@@ -75,15 +85,13 @@ function db_query($conn_or_sql, $sql = null) {
     if ($pdo) {
         try {
             if ($is_postgres) {
-                // Transform backticks `table` to "table" or unquote for postgres
                 $queryStr = str_replace('`', '"', $queryStr);
-                // Postgres uses ILIKE for case insensitive LIKE search
                 $queryStr = str_replace(' LIKE ', ' ILIKE ', $queryStr);
             }
             $stmt = $pdo->query($queryStr);
             return new DBResult($stmt);
         } catch (PDOException $e) {
-            error_log("DB Query Error: " . $e->getMessage());
+            error_log("DB Query Error: " . $e->getMessage() . " | SQL: " . $queryStr);
             return false;
         }
     } else if ($koneksi) {

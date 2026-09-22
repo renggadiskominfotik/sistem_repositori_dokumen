@@ -8,7 +8,7 @@ if (isset($_POST['simpan'])) {
     $jenis     = db_real_escape_string($koneksi, $_POST['kategori_surat']);
     $deskripsi = db_real_escape_string($koneksi, $_POST['deskripsi']);
     $tanggal   = date("Y-m-d");
-    $id_admin  = $_SESSION['id_admin'];
+    $id_admin  = isset($_SESSION['id_admin']) && !empty($_SESSION['id_admin']) ? (int)$_SESSION['id_admin'] : 1;
 
     $rawNamaFile = isset($_FILES['nama_file']['name']) ? $_FILES['nama_file']['name'] : '';
     $tmpFile     = isset($_FILES['nama_file']['tmp_name']) ? $_FILES['nama_file']['tmp_name'] : '';

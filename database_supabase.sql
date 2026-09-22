@@ -26,3 +26,7 @@ INSERT INTO dokumen (id_dokumen, judul, jenis_dokumen, deskripsi, nama_file, tan
 (2, 'edaran kegiatan kerja', 'Surat Edaran', '', 'BIGDATA_6F_rengganurardiyansah_233510352.pdf', '2026-08-20', 1),
 (3, 'peraturan daerah', 'Regulasi Pusat', '', '(111-117)+JURNAL+DANANG+-+JITTER.pdf', '2026-09-09', 1)
 ON CONFLICT (id_dokumen) DO NOTHING;
+
+-- SINKRONISASI SEQUENCE ID AGAR FITUR TAMBAH DOKUMEN (INSERT) PADA POSTGRESQL/SUPABASE BERJALAN LANCAR
+SELECT setval(pg_get_serial_sequence('admin', 'id_admin'), COALESCE(max(id_admin), 1)) FROM admin;
+SELECT setval(pg_get_serial_sequence('dokumen', 'id_dokumen'), COALESCE(max(id_dokumen), 1)) FROM dokumen;

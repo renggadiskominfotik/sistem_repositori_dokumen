@@ -62,13 +62,39 @@ if (file_exists($filePath) && !is_dir($filePath)) {
     }
 }
 
-// If an asset under /assets/uploads/ was requested but not found locally, redirect to Supabase Storage
+// Handle requests to /assets/uploads/
 if (strpos($uri, '/assets/uploads/') === 0 || strpos($uri, 'assets/uploads/') !== false) {
     $filename = basename($uri);
     $supabaseUrl = isset($_ENV['SUPABASE_URL']) && $_ENV['SUPABASE_URL'] !== '' ? $_ENV['SUPABASE_URL'] : 'https://ofcftaqpuvpedcmakfii.supabase.co';
     $bucket = isset($_ENV['SUPABASE_BUCKET']) && $_ENV['SUPABASE_BUCKET'] !== '' ? $_ENV['SUPABASE_BUCKET'] : 'dokumen';
     
     $publicUrl = rtrim($supabaseUrl, '/') . '/storage/v1/object/public/' . $bucket . '/' . rawurlencode($filename);
+    $isDownload = isset($_GET['download']) && $_GET['download'] == '1';
+
+    if ($isDownload || isset($_GET['proxy'])) {
+        $fileData = @file_get_contents($publicUrl);
+        if ($fileData !== false) {
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'pdf'  => 'application/pdf',
+                'doc'  => 'application/msword',
+                'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'png'  => 'image/png',
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg'
+            ];
+            $contentType = isset($mimeTypes[$ext]) ? $mimeTypes[$ext] : 'application/octet-stream';
+            $disposition = $isDownload ? 'attachment' : 'inline';
+
+            header('Access-Control-Allow-Origin: *');
+            header('Content-Type: ' . $contentType);
+            header('Content-Length: ' . strlen($fileData));
+            header('Content-Disposition: ' . $disposition . '; filename="' . basename($filename) . '"');
+            echo $fileData;
+            exit;
+        }
+    }
+
     header('Location: ' . $publicUrl);
     exit;
 }

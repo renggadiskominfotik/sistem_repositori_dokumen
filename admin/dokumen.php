@@ -295,13 +295,18 @@ function getBadgeClass($type) {
 
 <script>
 async function downloadWithFolderPicker(fileUrl, defaultFilename) {
+    if (!fileUrl) return;
+    
+    const cleanFilename = defaultFilename || 'dokumen.pdf';
+    const downloadEndpoint = '/assets/uploads/' + encodeURIComponent(cleanFilename) + '?download=1';
+
     if ('showSaveFilePicker' in window) {
         try {
-            const response = await fetch(fileUrl);
-            if (!response.ok) throw new Error('File fetch error');
+            const response = await fetch(downloadEndpoint);
+            if (!response.ok) throw new Error('HTTP Error ' + response.status);
             const blob = await response.blob();
             
-            const ext = (defaultFilename.split('.').pop() || 'pdf').toLowerCase();
+            const ext = (cleanFilename.split('.').pop() || 'pdf').toLowerCase();
             const mimeTypes = {
                 'pdf': 'application/pdf',
                 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -313,7 +318,7 @@ async function downloadWithFolderPicker(fileUrl, defaultFilename) {
             const mime = mimeTypes[ext] || 'application/octet-stream';
 
             const handle = await window.showSaveFilePicker({
-                suggestedName: defaultFilename,
+                suggestedName: cleanFilename,
                 types: [{
                     description: 'Dokumen (' + ext.toUpperCase() + ')',
                     accept: { [mime]: ['.' + ext] }
@@ -324,32 +329,35 @@ async function downloadWithFolderPicker(fileUrl, defaultFilename) {
             await writable.close();
             return;
         } catch (err) {
-            if (err.name === 'AbortError') return;
+            if (err.name === 'AbortError') return; // User cancelled Save As dialog
             console.warn('showSaveFilePicker fallback:', err);
         }
     }
 
+    // Direct fallback download prompt
     const a = document.createElement('a');
-    a.href = fileUrl;
-    a.download = defaultFilename;
+    a.href = downloadEndpoint;
+    a.download = cleanFilename;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    setTimeout(() => { document.body.removeChild(a); }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
     const previewModal = document.getElementById('previewModal');
     if (previewModal) {
         previewModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const judul = button.getAttribute('data-judul');
-            const jenis = button.getAttribute('data-jenis');
-            const badgeClass = button.getAttribute('data-badge');
-            const tanggal = button.getAttribute('data-tanggal');
+            const button = event.relatedTarget ? event.relatedTarget.closest('[data-bs-toggle="modal"]') || event.relatedTarget : null;
+            if (!button) return;
+
+            const judul = button.getAttribute('data-judul') || '';
+            const jenis = button.getAttribute('data-jenis') || '';
+            const badgeClass = button.getAttribute('data-badge') || 'bg-secondary';
+            const tanggal = button.getAttribute('data-tanggal') || '';
             const deskripsi = button.getAttribute('data-deskripsi') || 'Tidak ada deskripsi untuk dokumen ini.';
-            const file = button.getAttribute('data-file');
-            const fileUrl = button.getAttribute('data-file-url');
+            const file = button.getAttribute('data-file') || '';
+            const fileUrl = button.getAttribute('data-file-url') || '';
 
             document.getElementById('modalJudul').textContent = judul;
             document.getElementById('modalDeskripsi').textContent = deskripsi;
@@ -360,15 +368,20 @@ document.addEventListener('DOMContentLoaded', function () {
             modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
             modalBadge.textContent = jenis;
 
-            document.getElementById('modalNewTabBtn').href = fileUrl;
+            document.getElementById('modalNewTabBtn').href = fileUrl || '#';
 
             const modalDownloadBtn = document.getElementById('modalDownloadBtn');
             modalDownloadBtn.onclick = function() {
                 downloadWithFolderPicker(fileUrl, file);
             };
-            document.getElementById('modalNewTabBtn').href = fileUrl;
 
             const container = document.getElementById('modalViewerContainer');
+            if (!file || !fileUrl) {
+                container.className = 'rounded-3 border bg-light d-flex align-items-center justify-content-center p-5';
+                container.innerHTML = '<div class="text-center text-muted"><i class="bi bi-file-earmark-x fs-1"></i><p class="mt-2 m-0">Dokumen tidak memiliki berkas terlampir.</p></div>';
+                return;
+            }
+
             const ext = file.split('.').pop().toLowerCase();
 
             if (['pdf'].includes(ext)) {

@@ -203,7 +203,7 @@ function upload_to_storage($tmpFilePath, $filename) {
     if (!empty($supabaseUrl) && !empty($supabaseKey)) {
         ensure_supabase_bucket_exists($supabaseUrl, $supabaseKey, $bucket);
 
-        $cleanFilename = str_replace(' ', '%20', basename($filename));
+        $cleanFilename = rawurlencode(basename($filename));
         $endpoint = rtrim($supabaseUrl, '/') . '/storage/v1/object/' . $bucket . '/' . $cleanFilename;
 
         $fileData = @file_get_contents($tmpFilePath);

@@ -157,7 +157,7 @@ function getBadgeClass($type) {
                     <tbody>
                         <?php
                         $no = 1;
-                        $sql = "SELECT * FROM dokumen WHERE 1";
+                        $sql = "SELECT * FROM dokumen WHERE 1=1";
 
                         if (!empty($get_cari)) {
                             $sql .= " AND " . buildSmartSearchClauseAdmin($get_cari, $koneksi);

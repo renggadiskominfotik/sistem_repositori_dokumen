@@ -285,3 +285,17 @@ function delete_from_storage($filename) {
         }
     }
 }
+
+function get_public_file_url($filename) {
+    if (empty($filename)) return '';
+    
+    // Check if local file exists first (for localhost development)
+    $localFile = __DIR__ . '/../assets/uploads/' . basename($filename);
+    if (file_exists($localFile)) {
+        return '/assets/uploads/' . rawurlencode(basename($filename));
+    }
+
+    $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
+    $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
+    return rtrim($supabaseUrl, '/') . '/storage/v1/object/public/' . $bucket . '/' . rawurlencode(basename($filename));
+}

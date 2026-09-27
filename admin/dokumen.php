@@ -207,6 +207,7 @@ function getBadgeClass($type) {
                                                 data-tanggal="<?= date('d M Y', strtotime($data['tanggal_upload'])); ?>"
                                                 data-deskripsi="<?= htmlspecialchars($data['deskripsi']); ?>"
                                                 data-file="<?= htmlspecialchars($data['nama_file']); ?>"
+                                                data-file-url="<?= get_public_file_url($data['nama_file']); ?>"
                                                 title="Lihat / Pratinjau Dokumen">
                                             <i class="bi bi-eye-fill fs-6"></i>
                                         </button>
@@ -277,10 +278,10 @@ function getBadgeClass($type) {
                 </a>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-secondary rounded-3 px-4" data-bs-dismiss="modal">Tutup</button>
-                    <a id="modalDownloadBtn" href="#" class="btn btn-primary rounded-3 px-4 d-flex align-items-center gap-2" download>
+                    <button type="button" id="modalDownloadBtn" class="btn btn-primary rounded-3 px-4 d-flex align-items-center gap-2">
                         <i class="bi bi-cloud-arrow-down-fill"></i>
                         <span>Unduh Dokumen</span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -293,6 +294,50 @@ function getBadgeClass($type) {
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js"></script>
 
 <script>
+async function downloadWithFolderPicker(fileUrl, defaultFilename) {
+    if ('showSaveFilePicker' in window) {
+        try {
+            const response = await fetch(fileUrl);
+            if (!response.ok) throw new Error('File fetch error');
+            const blob = await response.blob();
+            
+            const ext = (defaultFilename.split('.').pop() || 'pdf').toLowerCase();
+            const mimeTypes = {
+                'pdf': 'application/pdf',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'doc': 'application/msword',
+                'png': 'image/png',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg'
+            };
+            const mime = mimeTypes[ext] || 'application/octet-stream';
+
+            const handle = await window.showSaveFilePicker({
+                suggestedName: defaultFilename,
+                types: [{
+                    description: 'Dokumen (' + ext.toUpperCase() + ')',
+                    accept: { [mime]: ['.' + ext] }
+                }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('showSaveFilePicker fallback:', err);
+        }
+    }
+
+    const a = document.createElement('a');
+    a.href = fileUrl;
+    a.download = defaultFilename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const previewModal = document.getElementById('previewModal');
     if (previewModal) {
@@ -304,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const tanggal = button.getAttribute('data-tanggal');
             const deskripsi = button.getAttribute('data-deskripsi') || 'Tidak ada deskripsi untuk dokumen ini.';
             const file = button.getAttribute('data-file');
+            const fileUrl = button.getAttribute('data-file-url');
 
             document.getElementById('modalJudul').textContent = judul;
             document.getElementById('modalDeskripsi').textContent = deskripsi;
@@ -314,8 +360,12 @@ document.addEventListener('DOMContentLoaded', function () {
             modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
             modalBadge.textContent = jenis;
 
-            const fileUrl = '/assets/uploads/' + encodeURIComponent(file);
-            document.getElementById('modalDownloadBtn').href = fileUrl;
+            document.getElementById('modalNewTabBtn').href = fileUrl;
+
+            const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+            modalDownloadBtn.onclick = function() {
+                downloadWithFolderPicker(fileUrl, file);
+            };
             document.getElementById('modalNewTabBtn').href = fileUrl;
 
             const container = document.getElementById('modalViewerContainer');

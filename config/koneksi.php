@@ -289,13 +289,15 @@ function delete_from_storage($filename) {
 function get_public_file_url($filename) {
     if (empty($filename)) return '';
     
+    $clean = rawurldecode(basename($filename));
+
     // Check if local file exists first (for localhost development)
-    $localFile = __DIR__ . '/../assets/uploads/' . basename($filename);
+    $localFile = __DIR__ . '/../assets/uploads/' . $clean;
     if (file_exists($localFile)) {
-        return '/assets/uploads/' . rawurlencode(basename($filename));
+        return '/assets/uploads/' . rawurlencode($clean);
     }
 
     $supabaseUrl = get_db_env('SUPABASE_URL', 'https://ofcftaqpuvpedcmakfii.supabase.co');
     $bucket      = get_db_env('SUPABASE_BUCKET', 'dokumen');
-    return rtrim($supabaseUrl, '/') . '/storage/v1/object/public/' . $bucket . '/' . rawurlencode(basename($filename));
+    return rtrim($supabaseUrl, '/') . '/storage/v1/object/public/' . $bucket . '/' . rawurlencode($clean);
 }

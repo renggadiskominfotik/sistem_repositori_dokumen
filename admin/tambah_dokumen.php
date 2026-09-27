@@ -14,7 +14,13 @@ if (isset($_POST['simpan'])) {
     $tmpFile     = isset($_FILES['nama_file']['tmp_name']) ? $_FILES['nama_file']['tmp_name'] : '';
 
     if (!empty($rawNamaFile) && !empty($tmpFile)) {
-        upload_to_storage($tmpFile, $rawNamaFile);
+        $ext = strtolower(pathinfo($rawNamaFile, PATHINFO_EXTENSION));
+        $baseName = pathinfo($rawNamaFile, PATHINFO_FILENAME);
+        $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+        $cleanNamaFile = $cleanBase . ($ext ? '.' . $ext : '');
+
+        upload_to_storage($tmpFile, $cleanNamaFile);
+        $rawNamaFile = $cleanNamaFile;
     }
 
     $namaFile = db_real_escape_string($koneksi, $rawNamaFile);

@@ -24,14 +24,19 @@ if (isset($_POST['update'])) {
     $jenis = db_real_escape_string($koneksi, $_POST['kategori_surat']);
     $deskripsi = db_real_escape_string($koneksi, $_POST['deskripsi']);
 
-    if ($_FILES['nama_file']['name'] != "") {
+    if (!empty($_FILES['nama_file']['name']) && !empty($_FILES['nama_file']['tmp_name'])) {
 
         $rawNamaFile = $_FILES['nama_file']['name'];
-        $tmpFile = $_FILES['nama_file']['tmp_name'];
+        $tmpFile     = $_FILES['nama_file']['tmp_name'];
 
-        upload_to_storage($tmpFile, $rawNamaFile);
+        $ext = strtolower(pathinfo($rawNamaFile, PATHINFO_EXTENSION));
+        $baseName = pathinfo($rawNamaFile, PATHINFO_FILENAME);
+        $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+        $cleanNamaFile = $cleanBase . ($ext ? '.' . $ext : '');
 
-        $namaFile = db_real_escape_string($koneksi, $rawNamaFile);
+        upload_to_storage($tmpFile, $cleanNamaFile);
+
+        $namaFile = db_real_escape_string($koneksi, $cleanNamaFile);
 
         db_query($koneksi, "UPDATE dokumen SET 
             judul='$judul', 

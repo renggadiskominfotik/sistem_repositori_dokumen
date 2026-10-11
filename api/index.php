@@ -72,7 +72,33 @@ if (strpos($uri, '/assets/uploads/') === 0 || strpos($uri, 'assets/uploads/') !=
     $isDownload = isset($_GET['download']) && $_GET['download'] == '1';
 
     if ($isDownload || isset($_GET['proxy'])) {
-        $fileData = @file_get_contents($publicUrl);
+        $fileData = false;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($publicUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            $res = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($code === 200 && $res !== false) {
+                $fileData = $res;
+            }
+            curl_close($ch);
+        }
+
+        if ($fileData === false) {
+            $opts = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false
+                ]
+            ];
+            $ctx = stream_context_create($opts);
+            $fileData = @file_get_contents($publicUrl, false, $ctx);
+        }
+
         if ($fileData !== false) {
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $mimeTypes = [

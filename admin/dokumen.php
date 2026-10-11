@@ -201,6 +201,7 @@ function getBadgeClass($type) {
                                                 class="btn btn-sm btn-outline-info border-0 px-2 py-2 rounded-3" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#previewModal"
+                                                onclick="openPreviewModal(this)"
                                                 data-judul="<?= htmlspecialchars($data['judul']); ?>"
                                                 data-jenis="<?= htmlspecialchars($kat_display); ?>"
                                                 data-badge="<?= getBadgeClass($kat_display); ?>"
@@ -294,6 +295,151 @@ function getBadgeClass($type) {
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js"></script>
 
 <script>
+// Open preview modal dynamically and populate all fields
+function openPreviewModal(el) {
+    const judul = el.getAttribute('data-judul') || '';
+    const jenis = el.getAttribute('data-jenis') || '';
+    const badgeClass = el.getAttribute('data-badge') || 'bg-secondary';
+    const tanggal = el.getAttribute('data-tanggal') || '';
+    const deskripsi = el.getAttribute('data-deskripsi') || 'Tidak ada deskripsi untuk dokumen ini.';
+    const file = el.getAttribute('data-file') || '';
+    const fileUrl = el.getAttribute('data-file-url') || '';
+
+    const elJudul = document.getElementById('modalJudul');
+    const elDeskripsi = document.getElementById('modalDeskripsi');
+    const elTanggal = document.getElementById('modalTanggal');
+    const elNamaFile = document.getElementById('modalNamaFile');
+    const modalBadge = document.getElementById('modalBadge');
+    const newTabBtn = document.getElementById('modalNewTabBtn');
+    const downloadBtn = document.getElementById('modalDownloadBtn');
+    const container = document.getElementById('modalViewerContainer');
+
+    if (elJudul) elJudul.textContent = judul;
+    if (elDeskripsi) elDeskripsi.textContent = deskripsi;
+    if (elTanggal) elTanggal.textContent = tanggal;
+    if (elNamaFile) elNamaFile.textContent = file;
+    
+    if (modalBadge) {
+        modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
+        modalBadge.textContent = jenis;
+    }
+
+    if (newTabBtn) {
+        newTabBtn.href = fileUrl || '#';
+    }
+
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            downloadWithFolderPicker(fileUrl, file);
+        };
+    }
+
+    if (!container) return;
+
+    if (!file || !fileUrl) {
+        container.className = 'rounded-3 border bg-light d-flex align-items-center justify-content-center p-5';
+        container.innerHTML = '<div class="text-center text-muted"><i class="bi bi-file-earmark-x fs-1"></i><p class="mt-2 m-0">Dokumen tidak memiliki berkas terlampir.</p></div>';
+        return;
+    }
+
+    const ext = file.split('.').pop().toLowerCase();
+
+    if (['pdf'].includes(ext)) {
+        container.className = 'rounded-3 border overflow-hidden bg-light';
+        container.style.minHeight = '550px';
+        container.innerHTML = `<iframe src="${fileUrl}#toolbar=1" class="w-100 h-100 border-0" style="min-height: 550px;"></iframe>`;
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
+        container.className = 'rounded-3 border bg-dark d-flex align-items-center justify-content-center p-3 text-center';
+        container.style.minHeight = '450px';
+        container.innerHTML = `<img src="${fileUrl}" alt="${judul}" class="img-fluid rounded shadow-sm" style="max-height: 520px; object-fit: contain;">`;
+    } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+        container.className = 'rounded-3 border bg-black d-flex align-items-center justify-content-center';
+        container.style.minHeight = '400px';
+        container.innerHTML = `<video controls class="w-100 rounded" style="max-height: 500px;"><source src="${fileUrl}">Browser Anda tidak mendukung pemutar video.</video>`;
+    } else if (['docx', 'doc'].includes(ext)) {
+        container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-4';
+        container.style.minHeight = '500px';
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Memuat...</span>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">Memuat Pratinjau Dokumen Word...</h6>
+                <p class="text-muted small m-0">Sedang mengonversi dan menampilkan isi berkas .${ext.toUpperCase()}</p>
+            </div>
+        `;
+
+        function renderDocxFallback() {
+            container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-5 text-center';
+            container.style.minHeight = '350px';
+            container.innerHTML = `
+                <div class="mb-3">
+                    <i class="bi bi-file-earmark-word text-primary" style="font-size: 4.5rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Pratinjau .${ext.toUpperCase()} Tidak Tersedia</h5>
+                <p class="text-muted mb-4 fs-6" style="max-width: 480px;">
+                    Silakan unduh dokumen untuk melihat isinya secara lengkap di aplikasi Microsoft Word.
+                </p>
+                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                    <button type="button" onclick="downloadWithFolderPicker('${fileUrl}', '${file}')" class="btn btn-primary rounded-3 px-4 py-2 fw-semibold">
+                        <i class="bi bi-cloud-arrow-down-fill me-1"></i> Unduh Dokumen
+                    </button>
+                </div>
+            `;
+        }
+
+        fetch(fileUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('File tidak ditemukan');
+                return response.blob();
+            })
+            .then(blob => {
+                container.className = 'rounded-3 border bg-white p-3 overflow-auto style-docx-viewer';
+                container.style.maxHeight = '600px';
+                container.style.minHeight = '500px';
+                container.innerHTML = '<div id="docxTarget" class="w-100"></div>';
+                const docxTarget = document.getElementById('docxTarget');
+
+                if (typeof docx !== 'undefined' && docx.renderAsync) {
+                    docx.renderAsync(blob, docxTarget, null, {
+                        className: "docx-wrapper",
+                        inWrapper: true,
+                        ignoreWidth: false,
+                        ignoreHeight: false,
+                        experimental: true
+                    }).catch(err => {
+                        console.error('DOCX render error:', err);
+                        renderDocxFallback();
+                    });
+                } else {
+                    renderDocxFallback();
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                renderDocxFallback();
+            });
+    } else {
+        container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-5 text-center';
+        container.style.minHeight = '350px';
+        container.innerHTML = `
+            <div class="mb-3">
+                <i class="bi bi-file-earmark-text text-primary" style="font-size: 4.5rem;"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Pratinjau Berkas .${ext.toUpperCase()}</h5>
+            <p class="text-muted mb-4 fs-6" style="max-width: 480px;">
+                Dokumen dengan format <strong>.${ext.toUpperCase()}</strong> dapat diunduh untuk dibuka pada perangkat Anda.
+            </p>
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                <button type="button" onclick="downloadWithFolderPicker('${fileUrl}', '${file}')" class="btn btn-primary rounded-3 px-4 py-2 fw-semibold">
+                    <i class="bi bi-cloud-arrow-down-fill me-1"></i> Unduh Dokumen
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Global function to trigger Save As dialog for choosing download folder
 async function downloadWithFolderPicker(fileUrl, defaultFilename) {
     if (!fileUrl) return;
     
@@ -348,188 +494,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewModal = document.getElementById('previewModal');
     if (previewModal) {
         previewModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget ? event.relatedTarget.closest('[data-bs-toggle="modal"]') || event.relatedTarget : null;
-            if (!button) return;
-
-            const judul = button.getAttribute('data-judul') || '';
-            const jenis = button.getAttribute('data-jenis') || '';
-            const badgeClass = button.getAttribute('data-badge') || 'bg-secondary';
-            const tanggal = button.getAttribute('data-tanggal') || '';
-            const deskripsi = button.getAttribute('data-deskripsi') || 'Tidak ada deskripsi untuk dokumen ini.';
-            const file = button.getAttribute('data-file') || '';
-            const fileUrl = button.getAttribute('data-file-url') || '';
-
-            document.getElementById('modalJudul').textContent = judul;
-            document.getElementById('modalDeskripsi').textContent = deskripsi;
-            document.getElementById('modalTanggal').textContent = tanggal;
-            document.getElementById('modalNamaFile').textContent = file;
-            
-            const modalBadge = document.getElementById('modalBadge');
-            modalBadge.className = 'badge rounded-pill px-3 py-2 fw-semibold ' + badgeClass;
-            modalBadge.textContent = jenis;
-
-            document.getElementById('modalNewTabBtn').href = fileUrl || '#';
-
-            const modalDownloadBtn = document.getElementById('modalDownloadBtn');
-            modalDownloadBtn.onclick = function() {
-                downloadWithFolderPicker(fileUrl, file);
-            };
-
-            const container = document.getElementById('modalViewerContainer');
-            if (!file || !fileUrl) {
-                container.className = 'rounded-3 border bg-light d-flex align-items-center justify-content-center p-5';
-                container.innerHTML = '<div class="text-center text-muted"><i class="bi bi-file-earmark-x fs-1"></i><p class="mt-2 m-0">Dokumen tidak memiliki berkas terlampir.</p></div>';
-                return;
-            }
-
-            const ext = file.split('.').pop().toLowerCase();
-
-            if (['pdf'].includes(ext)) {
-                container.className = 'rounded-3 border overflow-hidden bg-light';
-                container.style.minHeight = '550px';
-                container.innerHTML = `<iframe src="${fileUrl}#toolbar=1" class="w-100 h-100 border-0" style="min-height: 550px;"></iframe>`;
-            } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
-                container.className = 'rounded-3 border bg-dark d-flex align-items-center justify-content-center p-3 text-center';
-                container.style.minHeight = '450px';
-                container.innerHTML = `<img src="${fileUrl}" alt="${judul}" class="img-fluid rounded shadow-sm" style="max-height: 520px; object-fit: contain;">`;
-            } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
-                container.className = 'rounded-3 border bg-black d-flex align-items-center justify-content-center';
-                container.style.minHeight = '400px';
-                container.innerHTML = `<video controls class="w-100 rounded" style="max-height: 500px;"><source src="${fileUrl}">Browser Anda tidak mendukung pemutar video.</video>`;
-            } else if (['docx', 'doc'].includes(ext)) {
-                container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-4';
-                container.style.minHeight = '500px';
-                container.innerHTML = `
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="visually-hidden">Memuat...</span>
-                        </div>
-                        <h6 class="fw-bold text-dark mb-1">Memuat Pratinjau Dokumen Word...</h6>
-                        <p class="text-muted small m-0">Sedang mengonversi dan menampilkan isi berkas .${ext.toUpperCase()}</p>
-                    </div>
-                `;
-
-                fetch(fileUrl)
-                    .then(response => {
-                        if (!response.ok) throw new Error('File tidak ditemukan');
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        container.className = 'rounded-3 border bg-white p-3 overflow-auto style-docx-viewer';
-                        container.style.maxHeight = '600px';
-                        container.style.minHeight = '500px';
-                        container.innerHTML = '<div id="docxTarget" class="w-100"></div>';
-                        const docxTarget = document.getElementById('docxTarget');
-
-                        if (typeof docx !== 'undefined' && docx.renderAsync) {
-                            docx.renderAsync(blob, docxTarget, null, {
-                                className: "docx-wrapper",
-                                inWrapper: true,
-                                ignoreWidth: false,
-                                ignoreHeight: false,
-                                experimental: true
-                            }).catch(err => {
-                                console.error('DOCX render error:', err);
-                                renderDocxFallback();
-                            });
-                        } else {
-                            renderDocxFallback();
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Fetch error:', err);
-                        renderDocxFallback();
-                    });
-
-                function renderDocxFallback() {
-                    container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-5 text-center';
-                    container.style.minHeight = '350px';
-                    container.innerHTML = `
-                        <div class="mb-3">
-                            <i class="bi bi-file-earmark-word text-primary" style="font-size: 4.5rem;"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Pratinjau .${ext.toUpperCase()} Tidak Tersedia</h5>
-                        <p class="text-muted mb-4 fs-6" style="max-width: 480px;">
-                            Silakan unduh dokumen untuk melihat isinya secara lengkap di aplikasi Microsoft Word.
-                        </p>
-                        <div class="d-flex gap-2 flex-wrap justify-content-center">
-                            <a href="${fileUrl}" download class="btn btn-primary rounded-3 px-4 py-2 fw-semibold">
-                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Unduh Dokumen
-                            </a>
-                        </div>
-                    `;
-                }
-            } else {
-                container.className = 'rounded-3 border bg-light d-flex flex-column align-items-center justify-content-center p-5 text-center';
-                container.style.minHeight = '350px';
-                container.innerHTML = `
-                    <div class="mb-3">
-                        <i class="bi bi-file-earmark-text text-primary" style="font-size: 4.5rem;"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark mb-2">Pratinjau Berkas .${ext.toUpperCase()}</h5>
-                    <p class="text-muted mb-4 fs-6" style="max-width: 480px;">
-                        Dokumen dengan format <strong>.${ext.toUpperCase()}</strong> dapat diunduh untuk dibuka pada perangkat Anda.
-                    </p>
-                    <div class="d-flex gap-2 flex-wrap justify-content-center">
-                        <a href="${fileUrl}" download class="btn btn-primary rounded-3 px-4 py-2 fw-semibold">
-                            <i class="bi bi-cloud-arrow-down-fill me-1"></i> Unduh Dokumen
-                        </a>
-                    </div>
-                `;
-            const dlBtn = document.getElementById('modalDownloadBtn');
-            if (dlBtn) {
-                dlBtn.onclick = function(e) {
-                    e.preventDefault();
-                    triggerFolderSavePicker(fileUrl, file);
-                };
+            const button = event.relatedTarget ? (event.relatedTarget.closest('[data-bs-toggle="modal"]') || event.relatedTarget) : null;
+            if (button) {
+                openPreviewModal(button);
             }
         });
     }
-
-    // Attach folder save picker to all table download buttons
-    document.querySelectorAll('.btn-download-action').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const url = this.getAttribute('href');
-            const fileName = this.getAttribute('download') || url.split('/').pop();
-            triggerFolderSavePicker(url, fileName);
-        });
-    });
 });
-
-async function triggerFolderSavePicker(fileUrl, fileName) {
-    try {
-        const response = await fetch(fileUrl);
-        if (!response.ok) throw new Error('File tidak dapat diambil');
-        const blob = await response.blob();
-
-        if ('showSaveFilePicker' in window) {
-            const ext = fileName.split('.').pop().toLowerCase();
-            const opts = {
-                suggestedName: fileName,
-                types: [{
-                    description: 'Dokumen ' + ext.toUpperCase(),
-                    accept: { ['application/octet-stream']: ['.' + ext] }
-                }]
-            };
-            const handle = await window.showSaveFilePicker(opts);
-            const writable = await handle.createWritable();
-            await writable.write(blob);
-            await writable.close();
-            return;
-        }
-    } catch (err) {
-        if (err.name === 'AbortError') return;
-    }
-
-    const a = document.createElement('a');
-    a.href = fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'download=1';
-    a.download = fileName;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
 </script>
 </body>
 </html>

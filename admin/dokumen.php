@@ -325,7 +325,11 @@ function openPreviewModal(el) {
     }
 
     if (newTabBtn) {
-        newTabBtn.href = fileUrl || '#';
+        if (file) {
+            newTabBtn.href = '/view.php?file=' + encodeURIComponent(file);
+        } else {
+            newTabBtn.href = fileUrl || '#';
+        }
     }
 
     if (downloadBtn) {
@@ -446,23 +450,23 @@ async function downloadWithFolderPicker(fileUrl, defaultFilename) {
     const cleanFilename = defaultFilename || 'dokumen.pdf';
     const downloadEndpoint = '/assets/uploads/' + encodeURIComponent(cleanFilename) + '?download=1';
 
+    // Prioritaskan File System Access API agar user bisa memilih folder secara langsung
     if ('showSaveFilePicker' in window) {
         try {
-            const response = await fetch(downloadEndpoint);
-            if (!response.ok) throw new Error('HTTP Error ' + response.status);
-            const blob = await response.blob();
-            
             const ext = (cleanFilename.split('.').pop() || 'pdf').toLowerCase();
             const mimeTypes = {
                 'pdf': 'application/pdf',
                 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'doc': 'application/msword',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'xls': 'application/vnd.ms-excel',
                 'png': 'image/png',
                 'jpg': 'image/jpeg',
                 'jpeg': 'image/jpeg'
             };
             const mime = mimeTypes[ext] || 'application/octet-stream';
 
+            // Panggil dialog pemilihan folder langsung pada user gesture
             const handle = await window.showSaveFilePicker({
                 suggestedName: cleanFilename,
                 types: [{
@@ -470,13 +474,19 @@ async function downloadWithFolderPicker(fileUrl, defaultFilename) {
                     accept: { [mime]: ['.' + ext] }
                 }]
             });
+
+            // Setelah user memilih lokasi folder dan nama file, ambil data file dan tulis ke disk
+            const response = await fetch(downloadEndpoint);
+            if (!response.ok) throw new Error('HTTP Error ' + response.status);
+            const blob = await response.blob();
+
             const writable = await handle.createWritable();
             await writable.write(blob);
             await writable.close();
             return;
         } catch (err) {
-            if (err.name === 'AbortError') return; // User cancelled Save As dialog
-            console.warn('showSaveFilePicker fallback:', err);
+            if (err.name === 'AbortError') return; // User membatalkan dialog pemilihan folder
+            console.warn('showSaveFilePicker error, falling back:', err);
         }
     }
 

@@ -42,9 +42,17 @@ require_admin_login();
             <hr class="mb-4 opacity-50">
 
             <!-- Welcome Greeting Card -->
-            <div class="welcome-card mb-5 border-0">
-                <h4 class="fw-bold mb-2">Selamat Datang Kembali, <?php echo htmlspecialchars($_SESSION['nama']); ?>!</h4>
-                <p class="opacity-75 mb-0">Kelola dan atur data repositori dokumen resmi DISKOMINFOTIK Provinsi Riau dengan aman dan cepat.</p>
+            <div class="welcome-card mb-5 border-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h4 class="fw-bold mb-2">Selamat Datang Kembali, <?php echo htmlspecialchars($_SESSION['nama']); ?>!</h4>
+                    <p class="opacity-75 mb-0">Kelola dan atur data repositori dokumen resmi DISKOMINFOTIK Provinsi Riau dengan aman dan cepat.</p>
+                </div>
+                <div>
+                    <a href="profil.php" class="btn btn-light text-primary rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Pengaturan Akun</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Stats Widgets -->

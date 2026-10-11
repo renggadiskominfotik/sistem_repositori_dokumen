@@ -165,6 +165,13 @@ if (isset($koneksi) || isset($pdo)) {
             </li>
 
             <li>
+                <a href="/admin/profil.php" class="nav-link <?= ($current_page == 'profil.php') ? 'active' : ''; ?>">
+                    <i class="bi bi-person-gear"></i>
+                    <span>Pengaturan Akun</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="/admin/logout.php" class="nav-link <?= ($current_page == 'logout.php') ? 'active' : ''; ?>">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
